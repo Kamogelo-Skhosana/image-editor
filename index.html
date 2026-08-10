@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Editor &amp; Converter</title>
+    <meta name="description" content="Crop, rotate, adjust, resize and convert images to PNG, JPEG or WebP in your browser." />
+  </head>
+  <body>
+    <div class="app">
+      <header class="app__header">
+        <div>
+          <h1>Image Editor &amp; Converter</h1>
+          <p>Crop, straighten, adjust and convert — all local, nothing uploaded.</p>
+        </div>
+        <div class="app__header-actions">
+          <button class="btn btn--ghost" id="undo" type="button" disabled>Undo</button>
+          <button class="btn btn--ghost" id="revert" type="button">Revert all</button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel stage-panel">
+          <div class="drop" id="drop" tabindex="0" role="button">
+            <strong>Drop images here</strong>
+            <span>or click to browse — PNG, JPEG, WebP, GIF, BMP, AVIF, SVG</span>
+            <input id="fileInput" type="file" accept="image/*" multiple hidden />
+          </div>
+
+          <div class="stage" id="stage" hidden>
+            <div class="stage__canvas-wrap" id="canvasWrap">
+              <canvas id="canvas"></canvas>
+              <div class="crop-layer" id="cropLayer" hidden>
+                <div class="crop-box" id="cropBox">
+                  <i data-handle="nw"></i><i data-handle="ne"></i>
+                  <i data-handle="sw"></i><i data-handle="se"></i>
+                </div>
+              </div>
+            </div>
+            <p class="stage__meta" id="meta"></p>
+          </div>
+
+          <ul class="thumbs" id="thumbs"></ul>
+        </section>
+
+        <section class="panel tools" aria-label="Tools">
+          <div class="tool-group">
+            <h2>Transform</h2>
+            <div class="btn-row">
+              <button class="btn btn--ghost" data-action="rotate-left" type="button">⟲ 90°</button>
+              <button class="btn btn--ghost" data-action="rotate-right" type="button">⟳ 90°</button>
+              <button class="btn btn--ghost" data-action="flip-h" type="button">Flip ↔</button>
+              <button class="btn btn--ghost" data-action="flip-v" type="button">Flip ↕</button>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn--ghost" id="cropToggle" type="button">Crop</button>
+              <button class="btn" id="cropApply" type="button" hidden>Apply crop</button>
+              <button class="btn btn--ghost" id="cropCancel" type="button" hidden>Cancel</button>
+              <select id="cropRatio" hidden>
+                <option value="free">Free</option>
+                <option value="1">1 : 1</option>
+                <option value="1.7777">16 : 9</option>
+                <option value="1.3333">4 : 3</option>
+                <option value="0.75">3 : 4</option>
+                <option value="0.5625">9 : 16</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <h2>Size</h2>
+            <div class="row">
+              <label class="field"><span>Width</span><input id="width" type="number" min="1" /></label>
+              <label class="field"><span>Height</span><input id="height" type="number" min="1" /></label>
+              <label class="field field--check">
+                <input id="lockRatio" type="checkbox" checked />
+                <span>Lock ratio</span>
+              </label>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn--ghost btn--small" data-scale="0.25" type="button">25%</button>
+              <button class="btn btn--ghost btn--small" data-scale="0.5" type="button">50%</button>
+              <button class="btn btn--ghost btn--small" data-scale="0.75" type="button">75%</button>
+              <button class="btn btn--ghost btn--small" data-scale="1" type="button">100%</button>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <div class="tool-group__head">
+              <h2>Adjustments</h2>
+              <button class="link" id="resetFilters" type="button">reset</button>
+            </div>
+            <div class="sliders" id="sliders"></div>
+          </div>
+
+          <div class="tool-group">
+            <h2>Filter presets</h2>
+            <div class="presets" id="presets"></div>
+          </div>
+
+          <div class="tool-group">
+            <h2>Export</h2>
+            <div class="row">
+              <label class="field">
+                <span>Format</span>
+                <select id="format">
+                  <option value="image/png">PNG</option>
+                  <option value="image/jpeg">JPEG</option>
+                  <option value="image/webp">WebP</option>
+                </select>
+              </label>
+              <label class="field" id="qualityField">
+                <span>Quality <em id="qualityLabel">90%</em></span>
+                <input id="quality" type="range" min="10" max="100" step="1" value="90" />
+              </label>
+            </div>
+            <label class="field field--check">
+              <input id="matte" type="checkbox" />
+              <span>Flatten transparency onto white (JPEG always does)</span>
+            </label>
+            <div class="btn-row">
+              <button class="btn" id="download" type="button">Download</button>
+              <button class="btn btn--ghost" id="copy" type="button">Copy</button>
+            </div>
+            <p class="status" id="status">Load an image to start.</p>
+          </div>
+
+          <div class="tool-group">
+            <h2>Batch convert</h2>
+            <p class="hint">Applies the current adjustments, export format and quality to every loaded image. Crop and rotation stay per-image.</p>
+            <label class="field">
+              <span>Cap longest side <em id="capLabel">off</em></span>
+              <input id="cap" type="range" min="0" max="4000" step="100" value="0" />
+            </label>
+            <button class="btn btn--ghost" id="batch" type="button">Convert all &amp; download</button>
+          </div>
+
+          <div class="tool-group">
+            <aside class="ad ad--rail" data-ad="rail" aria-label="Advertisement"></aside>
+          </div>
+        </section>
+      </main>
+
+      <aside class="ad ad--leaderboard" data-ad="leaderboard" aria-label="Advertisement"></aside>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

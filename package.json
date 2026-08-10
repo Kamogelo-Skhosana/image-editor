@@ -1,0 +1,15 @@
+{
+  "name": "image-editor",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Browser image editor and converter — crop, rotate, adjust, resize and export to PNG, JPEG or WebP.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.5"
+  }
+}
