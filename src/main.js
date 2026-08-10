@@ -83,6 +83,45 @@ rail.addEventListener('click', (event) => {
   if (tab) showPanel(tab.dataset.tab)
 })
 
+/* -------------------------------------------------------------- welcome --- */
+
+/**
+ * First-run sheet. Both of its buttons live in a `method="dialog"` form, so
+ * closing needs no handler — this only decides when to open it and remembers
+ * that it has been seen. Storage can throw in private windows, in which case
+ * the sheet simply shows every visit.
+ */
+const welcome = $('#welcome')
+const WELCOME_SEEN = 'halide.welcome.seen'
+
+const remember = (key, value) => {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    /* storage unavailable — nothing to remember */
+  }
+}
+
+const recall = (key) => {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+if (!recall(WELCOME_SEEN)) welcome.showModal()
+
+welcome.addEventListener('close', () => remember(WELCOME_SEEN, '1'))
+
+// Clicking the backdrop counts as dismissing; the dialog box itself is the
+// event target only when the click lands outside its content.
+welcome.addEventListener('click', (event) => {
+  if (event.target === welcome) welcome.close()
+})
+
+$('#about').addEventListener('click', () => welcome.showModal())
+
 /* ---------------------------------------------------------------- input --- */
 
 dropZone.addEventListener('click', () => fileInput.click())

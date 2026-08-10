@@ -7,6 +7,10 @@ The interface is a fixed-height studio shell: tool rail on the left, canvas in t
 middle, options panel on the right, and a status bar along the bottom. Only one tool
 panel is open at a time — the rail switches between them.
 
+A welcome sheet explains what the tool is on the first visit — free, no account, nothing
+uploaded — and is remembered in `localStorage` under `halide.welcome.seen`. The ⓘ button
+in the header reopens it.
+
 ## Run
 
 ```bash
