@@ -49,6 +49,7 @@ export function createState(source, name) {
     flipH: false,
     flipV: false,
     filters: { ...DEFAULT_FILTERS },
+    preset: 'Original', // which chip is highlighted; cleared by hand-tuning
     width: 0,
     height: 0,
     history: [],
@@ -175,6 +176,7 @@ export function revert(state) {
   state.flipH = false
   state.flipV = false
   state.filters = { ...DEFAULT_FILTERS }
+  state.preset = 'Original'
   state.history = []
   resetSize(state)
 }

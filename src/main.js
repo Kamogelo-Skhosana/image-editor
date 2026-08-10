@@ -17,6 +17,7 @@ const fileInput = $('#fileInput')
 const thumbsEl = $('#thumbs')
 const metaEl = $('#meta')
 const statusEl = $('#status')
+const presetsEl = $('#presets')
 
 let entries = []
 let activeId = null
@@ -44,6 +45,44 @@ function setStatus(message, tone = '') {
   statusEl.dataset.tone = tone
 }
 
+/** Ranges paint their filled portion from a custom property. */
+function paintRange(input) {
+  const min = Number(input.min || 0)
+  const max = Number(input.max || 100)
+  const ratio = (Number(input.value) - min) / (max - min || 1)
+  input.style.setProperty('--fill', `${Math.round(ratio * 100)}%`)
+}
+
+/* ----------------------------------------------------------------- rail --- */
+
+const rail = $('#rail')
+
+// Each tool owns a hue. The rail colours itself from these in CSS; opening a
+// panel republishes the hue on :root so the panel picks it up too.
+const TOOL_HUES = {
+  frame: 'var(--coral)',
+  size: 'var(--blue)',
+  adjust: 'var(--violet)',
+  filters: 'var(--magenta)',
+  export: 'var(--green)',
+  batch: 'var(--amber)',
+}
+
+function showPanel(name) {
+  for (const panel of document.querySelectorAll('[data-panel]')) {
+    panel.hidden = panel.dataset.panel !== name
+  }
+  for (const tab of rail.querySelectorAll('[data-tab]')) {
+    tab.classList.toggle('is-active', tab.dataset.tab === name)
+  }
+  document.documentElement.style.setProperty('--tool', TOOL_HUES[name] ?? 'var(--coral)')
+}
+
+rail.addEventListener('click', (event) => {
+  const tab = event.target.closest('[data-tab]')
+  if (tab) showPanel(tab.dataset.tab)
+})
+
 /* ---------------------------------------------------------------- input --- */
 
 dropZone.addEventListener('click', () => fileInput.click())
@@ -67,6 +106,7 @@ fileInput.addEventListener('change', () => {
   addFiles(fileInput.files)
   fileInput.value = ''
 })
+$('#addMore').addEventListener('click', () => fileInput.click())
 
 function loadImage(file) {
   return new Promise((resolve, reject) => {
@@ -114,7 +154,7 @@ function renderThumbs() {
 
     const preview = document.createElement('canvas')
     const size = naturalSize(entry.state)
-    const scale = 64 / Math.max(size.width, size.height)
+    const scale = 96 / Math.max(size.width, size.height)
     render(entry.state, preview, { width: size.width * scale, height: size.height * scale })
     button.append(preview)
     button.addEventListener('click', () => {
@@ -141,6 +181,9 @@ function renderThumbs() {
     li.append(button, remove)
     thumbsEl.append(li)
   }
+
+  // Preset chips preview the active image, so they follow it around.
+  renderPresets()
 }
 
 /* ---------------------------------------------------------------- draw --- */
@@ -238,7 +281,9 @@ function enterCrop() {
   $('#cropToggle').hidden = true
   $('#cropApply').hidden = false
   $('#cropCancel').hidden = false
-  $('#cropRatio').hidden = false
+  $('#cropRatioField').hidden = false
+  stage.classList.add('is-cropping')
+  showPanel('frame')
   setStatus('Drag on the image to choose the area, then apply.')
 }
 
@@ -248,7 +293,8 @@ function exitCrop() {
   $('#cropToggle').hidden = false
   $('#cropApply').hidden = true
   $('#cropCancel').hidden = true
-  $('#cropRatio').hidden = true
+  $('#cropRatioField').hidden = true
+  stage.classList.remove('is-cropping')
 }
 
 $('#cropToggle').addEventListener('click', () => {
@@ -334,7 +380,9 @@ $('#sliders').addEventListener('input', (event) => {
   const state = active()
   if (!key || !state) return
   state.filters[key] = Number(event.target.value)
+  state.preset = null // hand-tuning drops the preset badge
   syncFilterLabels()
+  markActivePreset()
   draw()
 })
 
@@ -342,8 +390,11 @@ function syncFilterLabels() {
   const state = active()
   const filters = state?.filters ?? DEFAULT_FILTERS
   for (const { key, unit } of SLIDERS) {
+    const input = $(`[data-filter="${key}"]`)
     $(`[data-label="${key}"]`).textContent = `${filters[key]}${unit}`
-    $(`[data-filter="${key}"]`).value = filters[key]
+    input.value = filters[key]
+    input.closest('.slider').classList.toggle('is-touched', filters[key] !== DEFAULT_FILTERS[key])
+    paintRange(input)
   }
 }
 
@@ -351,20 +402,63 @@ $('#resetFilters').addEventListener('click', () => {
   const state = active()
   if (!state) return
   state.filters = { ...DEFAULT_FILTERS }
+  state.preset = 'Original'
   syncFilterLabels()
   renderThumbs()
   draw()
 })
 
-$('#presets').innerHTML = Object.keys(PRESETS)
-  .map((name) => `<button class="preset" type="button" data-preset="${name}">${name}</button>`)
-  .join('')
+/**
+ * Preset chips carry a live thumbnail of the active image under that look, so
+ * the choice is made by eye rather than by name.
+ */
+function renderPresets() {
+  const state = active()
+  presetsEl.innerHTML = ''
 
-$('#presets').addEventListener('click', (event) => {
-  const name = event.target.dataset.preset
+  for (const [name, filters] of Object.entries(PRESETS)) {
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.className = 'preset'
+    button.dataset.preset = name
+
+    const thumb = document.createElement('span')
+    thumb.className = 'preset__thumb'
+
+    if (state) {
+      const preview = document.createElement('canvas')
+      const size = naturalSize(state)
+      const scale = 120 / Math.max(size.width, size.height)
+      const restore = state.filters
+      state.filters = { ...DEFAULT_FILTERS, ...filters }
+      render(state, preview, { width: size.width * scale, height: size.height * scale })
+      state.filters = restore
+      thumb.append(preview)
+    }
+
+    const label = document.createElement('span')
+    label.textContent = name
+
+    button.append(thumb, label)
+    presetsEl.append(button)
+  }
+
+  markActivePreset()
+}
+
+function markActivePreset() {
+  const current = active()?.preset
+  for (const button of presetsEl.children) {
+    button.classList.toggle('is-active', button.dataset.preset === current)
+  }
+}
+
+presetsEl.addEventListener('click', (event) => {
+  const name = event.target.closest('[data-preset]')?.dataset.preset
   const state = active()
   if (!name || !state) return
   state.filters = { ...DEFAULT_FILTERS, ...PRESETS[name] }
+  state.preset = name
   syncFilterLabels()
   renderThumbs()
   draw()
@@ -372,13 +466,19 @@ $('#presets').addEventListener('click', (event) => {
 
 /* ---------------------------------------------------------------- export --- */
 
+// PNG is lossless, so the quality control is meaningless there.
+const syncQualityField = () => {
+  $('#qualityField').hidden = $('#format').value === 'image/png'
+}
+
 $('#format').addEventListener('change', () => {
-  $('#qualityField').style.visibility = $('#format').value === 'image/png' ? 'hidden' : 'visible'
+  syncQualityField()
   draw()
 })
 
 $('#quality').addEventListener('input', () => {
   $('#qualityLabel').textContent = `${$('#quality').value}%`
+  paintRange($('#quality'))
   draw()
 })
 
@@ -387,6 +487,7 @@ $('#matte').addEventListener('change', draw)
 $('#cap').addEventListener('input', () => {
   const value = Number($('#cap').value)
   $('#capLabel').textContent = value ? `${value} px` : 'off'
+  paintRange($('#cap'))
 })
 
 function saveBlob(blob, filename) {
@@ -479,9 +580,15 @@ function syncControls() {
   if (!state) return
   syncSizeInputs()
   syncFilterLabels()
+  markActivePreset()
 }
 
+showPanel('frame')
 syncControls()
-$('#qualityField').style.visibility = 'hidden' // PNG is lossless, so quality starts hidden
+syncFilterLabels() // paints the range fills before any image is loaded
+renderPresets()
+syncQualityField()
+paintRange($('#quality'))
+paintRange($('#cap'))
 setStatus('Load an image to start.')
 mountAds()

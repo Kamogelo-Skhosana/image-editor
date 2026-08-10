@@ -1,7 +1,11 @@
-# Image Editor & Converter
+# Halide — Image Editor & Converter
 
 Crop, straighten, adjust and convert images in the browser. Nothing is uploaded —
 every pixel stays on your machine.
+
+The interface is a fixed-height studio shell: tool rail on the left, canvas in the
+middle, options panel on the right, and a status bar along the bottom. Only one tool
+panel is open at a time — the rail switches between them.
 
 ## Run
 
@@ -14,12 +18,13 @@ Opens on http://localhost:5176
 
 ## Features
 
-- **Load** — drop or browse, several images at once, switch between them with thumbnails
+- **Load** — drop or browse, several images at once, switch between them from the filmstrip
 - **Transform** — rotate 90° either way, flip horizontally/vertically
 - **Crop** — drag a selection with free or fixed aspect ratios (1:1, 16:9, 4:3, 3:4, 9:16)
 - **Resize** — exact width/height with optional ratio lock, plus 25/50/75/100% presets
 - **Adjust** — brightness, contrast, saturation, hue, blur, greyscale, sepia, invert
-- **Presets** — Mono, Vintage, Punch, Cool, Warm, Faded, Negative
+- **Presets** — Mono, Vintage, Punch, Cool, Warm, Faded, Negative, each chip previewing
+  the current image under that look
 - **Convert** — export as PNG, JPEG or WebP with a quality slider and live size estimate
 - **Batch** — apply the current adjustments, format and quality to every loaded image,
   optionally capping the longest side
