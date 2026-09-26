@@ -1,4 +1,6 @@
 import './style.css'
+import '@polytheme/themes-classic/flourishes.css'
+import './theme.js'
 import { mountAds } from './ads.js'
 import {
   SLIDERS, PRESETS, DEFAULT_FILTERS,

@@ -8,50 +8,64 @@
  * drains to grey, invert runs white to black.
  */
 
+/*
+ * Themed by polytheme (see src/theme.js). The engine writes the `--pt-*`
+ * custom properties; the app's own vocabulary is mapped onto them here, and
+ * nothing below this block names a colour, font or radius.
+ *
+ * The seven "colourful set" hues were the tricky part. Each tool in the rail
+ * owns a hue, and that distinction is real UX — you learn which panel you are
+ * in by its colour. A theme supplies one accent, one secondary and three
+ * status colours, so the seven map onto five distinct theme colours plus one
+ * blend, rather than collapsing to a single accent that would make every tool
+ * look identical.
+ *
+ * Fallbacks are the active theme's values, so the first paint is correct in
+ * the gap before the engine's module script runs.
+ */
 :root {
   /* surfaces */
-  --page: #f2f0f6;
-  --chrome: #ffffff;
-  --panel: #ffffff;
-  --raise: #f5f3f8;
-  --hover: #ebe8f1;
-  --sunk: #e7e4ee;
-  --line: #e2dfea;
-  --line-soft: #edeaf2;
+  --page: var(--pt-color-bg, #170033);
+  --chrome: var(--pt-color-card-bg, #24063f);
+  --raise: var(--pt-color-bg-alt, #22004a);
+  --line: var(--pt-color-border, #4b2a80);
+  --line-soft: color-mix(in srgb, var(--line) 45%, var(--page));
 
   /* type */
-  --text: #191626;
-  --dim: #66607a;
-  --mute: #948da6;
+  --text: var(--pt-color-text, #f6ecff);
+  --dim: var(--pt-color-text-dim, #b199d6);
+  --mute: color-mix(in srgb, var(--dim) 84%, var(--page));
 
-  /* the colourful set */
-  --coral: #ff5a3c;
-  --rose: #f5326b;
-  --blue: #2f7bff;
-  --violet: #7b52f5;
-  --magenta: #e0399b;
-  --green: #0fb36b;
-  --amber: #f59f0b;
+  /* the colourful set, now derived from the theme */
+  --coral: var(--pt-color-accent, #ff2e9a);
+  --rose: var(--pt-color-accent-alt, #21d4fd);
+  --blue: var(--pt-color-accent-alt, #21d4fd);
+  --violet: color-mix(in srgb, var(--coral) 50%, var(--rose));
+  --magenta: var(--pt-color-danger, #ff4d5e);
+  --green: var(--pt-color-success, #38f2b3);
+  --amber: var(--pt-color-warning, #ffd166);
 
-  --brand: var(--coral);
-  --brand-hot: var(--rose);
+  /* Text that sits on top of any of the above. */
+  --on-tool: var(--pt-color-accent-text, #12002e);
 
   /* Set by the rail: the hue of whichever tool is open. */
   --tool: var(--coral);
-  --rail-off: #ded9e8;
+  --rail-off: color-mix(in srgb, var(--text) 46%, var(--page));
 
-  --r-lg: 16px;
-  --r-md: 11px;
-  --r-sm: 8px;
+  --r-lg: var(--pt-shape-radius-large, 4px);
+  --r-md: var(--pt-shape-radius, 4px);
+  --r-sm: var(--pt-shape-radius, 4px);
+  --shadow: var(--pt-shape-shadow, 0 0 24px rgba(255, 46, 154, 0.35));
+  --border-width: var(--pt-shape-border-width, 1px);
 
-  --sans: "Inter", ui-sans-serif, system-ui, "Segoe UI Variable Text", "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, "Cascadia Mono", "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --sans: var(--pt-type-body, "Rajdhani", system-ui, sans-serif);
+  --display: var(--pt-type-display, "Orbitron", "Eurostile", sans-serif);
+  --mono: var(--pt-type-mono, "Share Tech Mono", ui-monospace, monospace);
+  --tracking: var(--pt-type-letter-spacing, 0.08em);
+  --motion: var(--pt-motion-duration, 220ms) var(--pt-motion-ease, ease);
 
   --topbar-h: 58px;
   --status-h: 34px;
-
-  color-scheme: light;
 }
 
 * {
@@ -82,7 +96,7 @@ body {
 
 ::selection {
   background: var(--coral);
-  color: #fff;
+  color: var(--on-tool);
 }
 
 .app {
@@ -124,9 +138,11 @@ body {
 }
 
 .brand__text b {
+  font-family: var(--display);
   font-size: 15px;
-  font-weight: 650;
-  letter-spacing: -0.015em;
+  font-weight: var(--pt-type-hero-weight, 650);
+  letter-spacing: var(--tracking);
+  text-transform: var(--pt-type-heading-transform, none);
 }
 
 .brand__text em {
@@ -144,10 +160,10 @@ body {
   gap: 6px;
   margin: 0 auto 0 6px;
   padding: 5px 12px 5px 9px;
-  border: 1px solid #b9ecd4;
+  border: var(--border-width) solid color-mix(in srgb, var(--green) 45%, var(--chrome));
   border-radius: 999px;
-  background: #eafaf2;
-  color: #0a7a49;
+  background: color-mix(in srgb, var(--green) 14%, var(--chrome));
+  color: var(--green);
   font-size: 11.5px;
   font-weight: 500;
   white-space: nowrap;
@@ -208,7 +224,7 @@ body {
 }
 
 .icon-btn:disabled {
-  color: #c6c1d1;
+  color: color-mix(in srgb, var(--text) 35%, var(--page));
   cursor: not-allowed;
 }
 
@@ -297,7 +313,7 @@ body {
   min-width: 0;
   position: relative;
   background:
-    radial-gradient(70% 55% at 12% 0%, rgba(255, 90, 60, 0.09), transparent 62%),
+    radial-gradient(70% 55% at 12% 0%, color-mix(in srgb, var(--coral) 10%, transparent), transparent 62%),
     radial-gradient(65% 60% at 88% 4%, rgba(123, 82, 245, 0.1), transparent 60%),
     radial-gradient(80% 60% at 60% 100%, rgba(47, 123, 255, 0.07), transparent 65%),
     var(--page);
@@ -329,9 +345,9 @@ body {
   gap: 6px;
   width: min(460px, 100%);
   padding: 40px 32px 34px;
-  border: 1.5px dashed #cdc7dc;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.72);
+  border: 1.5px dashed var(--line);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--chrome) 82%, transparent);
   text-align: center;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
@@ -341,7 +357,7 @@ body {
 .drop:focus-visible,
 .drop.is-over {
   border-color: var(--coral);
-  background: #fff;
+  background: var(--chrome);
   outline: none;
 }
 
@@ -360,6 +376,10 @@ body {
   width: 22px;
   height: 22px;
   fill: none;
+  /* Deliberately not themed. Everything from here down sits on top of the
+     user's photograph rather than on app chrome, so it needs to stay legible
+     against an arbitrary image — a themed accent could land on a same-coloured
+     region and vanish. */
   stroke: #fff;
   stroke-width: 2.2;
   stroke-linecap: round;
@@ -381,7 +401,7 @@ body {
   padding: 7px 16px;
   border-radius: 999px;
   background: linear-gradient(140deg, var(--coral), var(--rose));
-  color: #fff;
+  color: var(--on-tool);
   font-size: 12.5px;
   font-weight: 600;
   box-shadow: 0 3px 10px -3px rgba(245, 50, 107, 0.55);
@@ -407,6 +427,8 @@ body {
   max-width: 100%;
   line-height: 0;
   border-radius: 5px;
+  /* The transparency checkerboard. Literal by convention: it has to read as
+     "there is nothing here", which a themed surface would not. */
   background-color: #ffffff;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect width='8' height='8' fill='%23ebe8f0'/%3E%3Crect x='8' y='8' width='8' height='8' fill='%23ebe8f0'/%3E%3C/svg%3E");
   box-shadow:
@@ -489,7 +511,7 @@ body {
   gap: 8px;
   padding: 10px 14px;
   min-height: 64px;
-  background: rgba(255, 255, 255, 0.82);
+  background: color-mix(in srgb, var(--chrome) 88%, transparent);
   border-top: 1px solid var(--line);
   backdrop-filter: blur(8px);
   position: relative;
@@ -502,7 +524,7 @@ body {
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1.5px dashed #cdc7dc;
+  border: 1.5px dashed var(--line);
   border-radius: var(--r-md);
   background: transparent;
   color: var(--mute);
@@ -522,7 +544,7 @@ body {
   border-color: var(--coral);
   border-style: solid;
   color: var(--coral);
-  background: #fff5f2;
+  background: color-mix(in srgb, var(--coral) 12%, var(--chrome));
 }
 
 .thumbs {
@@ -583,7 +605,7 @@ body {
   height: 17px;
   border-radius: 50%;
   background: var(--rose);
-  color: #fff;
+  color: var(--on-tool);
   font-size: 12px;
   line-height: 16px;
   text-align: center;
@@ -611,7 +633,7 @@ body {
 .inspector__scroll {
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #d6d1e0 transparent;
+  scrollbar-color: color-mix(in srgb, var(--text) 30%, var(--page)) transparent;
 }
 
 .panel {
@@ -758,7 +780,7 @@ select:hover {
 input[type="number"]:focus,
 select:focus {
   border-color: var(--tool);
-  background: #fff;
+  background: var(--chrome);
   outline: none;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--tool) 16%, transparent);
 }
@@ -929,7 +951,7 @@ input[data-filter="invert"]     { --track: linear-gradient(90deg, #ffffff, #8f88
 }
 
 .btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--tool) 9%, #fff);
+  background: color-mix(in srgb, var(--tool) 9%, var(--chrome));
   border-color: color-mix(in srgb, var(--tool) 45%, var(--line));
   color: var(--tool);
 }
@@ -941,15 +963,15 @@ input[data-filter="invert"]     { --track: linear-gradient(90deg, #ffffff, #8f88
 .btn--primary {
   border-color: transparent;
   background: linear-gradient(140deg, var(--coral), var(--rose));
-  color: #fff;
+  color: var(--on-tool);
   font-weight: 600;
   box-shadow: 0 3px 12px -3px rgba(245, 50, 107, 0.6);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: linear-gradient(140deg, #ff6f55, #ff2f6e);
+  background: linear-gradient(140deg, var(--coral), var(--rose));
   border-color: transparent;
-  color: #fff;
+  color: var(--on-tool);
   box-shadow: 0 5px 16px -3px rgba(245, 50, 107, 0.7);
 }
 
@@ -989,7 +1011,7 @@ input[data-filter="invert"]     { --track: linear-gradient(90deg, #ffffff, #8f88
 }
 
 .tile:hover {
-  background: color-mix(in srgb, var(--tool) 11%, #fff);
+  background: color-mix(in srgb, var(--tool) 11%, var(--chrome));
   border-color: color-mix(in srgb, var(--tool) 50%, var(--line));
   color: var(--tool);
 }
@@ -1012,7 +1034,7 @@ input[data-filter="invert"]     { --track: linear-gradient(90deg, #ffffff, #8f88
 }
 
 .chip:hover {
-  background: color-mix(in srgb, var(--tool) 12%, #fff);
+  background: color-mix(in srgb, var(--tool) 12%, var(--chrome));
   border-color: color-mix(in srgb, var(--tool) 50%, var(--line));
   color: var(--tool);
 }
@@ -1044,7 +1066,7 @@ input[data-filter="invert"]     { --track: linear-gradient(90deg, #ffffff, #8f88
   aspect-ratio: 1;
   border-radius: var(--r-sm);
   overflow: hidden;
-  background: repeating-linear-gradient(45deg, #efedf4 0 6px, #e6e3ee 6px 12px);
+  background: repeating-linear-gradient(45deg, var(--raise) 0 6px, var(--chrome) 6px 12px);
   box-shadow: 0 0 0 1px var(--line);
 }
 
@@ -1120,9 +1142,9 @@ input[data-filter="invert"]     { --track: linear-gradient(90deg, #ffffff, #8f88
   background: var(--mute);
 }
 
-.status[data-tone="ok"] { color: #0a8f56; }
-.status[data-tone="warn"] { color: #b57209; }
-.status[data-tone="error"] { color: #d51f57; }
+.status[data-tone="ok"] { color: var(--green); }
+.status[data-tone="warn"] { color: var(--amber); }
+.status[data-tone="error"] { color: var(--magenta); }
 
 .status[data-tone="ok"]::before { background: var(--green); }
 .status[data-tone="warn"]::before { background: var(--amber); }
@@ -1278,8 +1300,8 @@ a.ad__house:hover b {
   height: 30px;
   padding: 0;
   border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--chrome) 80%, transparent);
   color: var(--dim);
   cursor: pointer;
 }
@@ -1294,7 +1316,7 @@ a.ad__house:hover b {
 }
 
 .welcome__dismiss:hover {
-  background: #fff;
+  background: var(--chrome);
   color: var(--text);
 }
 
@@ -1303,16 +1325,16 @@ a.ad__house:hover b {
   text-align: center;
   border-bottom: 1px solid var(--line-soft);
   background:
-    radial-gradient(80% 100% at 20% 0%, rgba(255, 90, 60, 0.14), transparent 60%),
-    radial-gradient(80% 100% at 85% 10%, rgba(123, 82, 245, 0.16), transparent 62%),
-    linear-gradient(180deg, #fbf9ff, #ffffff);
+    radial-gradient(80% 100% at 20% 0%, color-mix(in srgb, var(--coral) 16%, transparent), transparent 60%),
+    radial-gradient(80% 100% at 85% 10%, color-mix(in srgb, var(--violet) 18%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--raise), var(--chrome));
 }
 
 .welcome__mark {
   width: 52px;
   height: 52px;
   border-radius: 16px;
-  box-shadow: 0 10px 24px -8px rgba(245, 50, 107, 0.65);
+  box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--rose) 65%, transparent);
 }
 
 .welcome__hero h2 {

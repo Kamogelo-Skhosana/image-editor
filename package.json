@@ -11,5 +11,9 @@
   },
   "devDependencies": {
     "vite": "^7.1.5"
+  },
+  "dependencies": {
+    "@polytheme/core": "file:../polytheme/packages/core",
+    "@polytheme/themes-classic": "file:../polytheme/packages/themes-pack-classic"
   }
 }
