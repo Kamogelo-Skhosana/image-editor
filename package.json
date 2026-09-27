@@ -13,7 +13,7 @@
     "vite": "^7.1.5"
   },
   "dependencies": {
-    "@polytheme/core": "file:../polytheme/packages/core",
-    "@polytheme/themes-classic": "file:../polytheme/packages/themes-pack-classic"
+    "@themeloom/core": "file:../themeloom/packages/core",
+    "@themeloom/themes-classic": "file:../themeloom/packages/themes-pack-classic"
   }
 }
