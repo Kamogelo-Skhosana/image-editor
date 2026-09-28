@@ -1,5 +1,5 @@
 import { ThemeEngine } from '@themeloom/core'
-import { retro80s } from '@themeloom/themes-classic'
+import { cyberpunk } from '@themeloom/themes-classic'
 
 /**
  * The app runs on one themeloom theme rather than a hand-rolled palette.
@@ -15,7 +15,7 @@ import { retro80s } from '@themeloom/themes-classic'
  * stay legible against an arbitrary photograph, which a themed accent cannot
  * promise.
  */
-export const theme = retro80s
+export const theme = cyberpunk
 
 export const engine = new ThemeEngine({
   themes: [theme],
